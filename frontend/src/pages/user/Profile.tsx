@@ -33,6 +33,7 @@ import favoriteApi from '../../services/favoriteApi';
 import reviewApi from '../../services/reviewApi';
 import { authApi } from '../../services/authApi';
 import shipperApi from '../../services/shipperApi';
+import api from '../../services/api';
 
 interface Address {
   id: string;
@@ -47,6 +48,21 @@ export const Profile: React.FC = () => {
   const location = useLocation();
   const { addToCart, totalItems } = useCart();
   const { user, refetchMe } = useAuth();
+
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [walletPending, setWalletPending] = useState<number | null>(null);
+
+  const fetchWallet = async () => {
+    try {
+      const res = await api.get('/wallet/balance');
+      if (res && (res as any).success && (res as any).data) {
+        setWalletBalance(Number((res as any).data.balance));
+        setWalletPending(Number((res as any).data.pendingBalance));
+      }
+    } catch (err) {
+      console.error('Lỗi khi tải số dư ví:', err);
+    }
+  };
 
   // Tab state
   const [activeTab, setActiveTab] = useState<'profile' | 'orders' | 'favorites'>('profile');
@@ -182,6 +198,7 @@ export const Profile: React.FC = () => {
             setSelectedOrderDetail((prev: any) =>
               prev && prev.id === orderId ? { ...prev, status: 'cancelled' } : prev
             );
+            fetchWallet();
           } else {
             showCustomAlert('Không thể hủy đơn hàng: ' + (res.message || 'Lỗi hệ thống'), 'Lỗi', 'error');
           }
@@ -224,6 +241,12 @@ export const Profile: React.FC = () => {
   useEffect(() => {
     if (activeTab === 'favorites') fetchFavoriteItems();
   }, [activeTab]);
+
+  useEffect(() => {
+    if (user) {
+      fetchWallet();
+    }
+  }, [user]);
 
   // Listen to tab and orderId query parameters
   useEffect(() => {
@@ -773,14 +796,14 @@ export const Profile: React.FC = () => {
                 <div>
                   <p className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider">Số dư khả dụng</p>
                   <p className="font-mono text-2xl font-black text-[#BF3A20] mt-0.5">
-                    150.000đ
+                    {walletBalance !== null ? `${walletBalance.toLocaleString('vi-VN')}đ` : 'Đang tải...'}
                   </p>
                 </div>
 
                 <div>
                   <p className="text-[10px] font-mono text-neutral-400 uppercase tracking-wider">Đang tạm giữ</p>
                   <p className="font-mono text-sm font-semibold text-neutral-600">
-                    45.000đ
+                    {walletPending !== null ? `${walletPending.toLocaleString('vi-VN')}đ` : 'Đang tải...'}
                   </p>
                 </div>
 

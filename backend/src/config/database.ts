@@ -65,14 +65,14 @@ export const initializeDatabase = async (): Promise<boolean> => {
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
 
     // Dọn sạch bảng vouchers cũ nếu bị lỗi tích lũy index (ER_TOO_MANY_KEYS)
-    try {
-      console.log('🧹 Đang làm sạch bảng vouchers cũ để tránh lỗi giới hạn index của MySQL...');
-      await sequelize.query('DROP TABLE IF EXISTS `user_vouchers`');
-      await sequelize.query('DROP TABLE IF EXISTS `vouchers`');
-      console.log('✅ Đã làm sạch các bảng liên quan đến khuyến mãi.');
-    } catch (e) {
-      console.warn('Lưu ý: Không thể xoá bảng cũ, có thể bảng chưa tồn tại:', e);
-    }
+    // try {
+    //   console.log('🧹 Đang làm sạch bảng vouchers cũ để tránh lỗi giới hạn index của MySQL...');
+    //   await sequelize.query('DROP TABLE IF EXISTS `user_vouchers`');
+    //   await sequelize.query('DROP TABLE IF EXISTS `vouchers`');
+    //   console.log('✅ Đã làm sạch các bảng liên quan đến khuyến mãi.');
+    // } catch (e) {
+    //   console.warn('Lưu ý: Không thể xoá bảng cũ, có thể bảng chưa tồn tại:', e);
+    // }
 
     // Tự động đồng bộ cấu trúc bảng (Syncing models)
     console.log('⚙️ Đang thực hiện đồng bộ hóa cấu trúc bảng (Syncing models)...');

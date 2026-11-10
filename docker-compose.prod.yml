@@ -1,0 +1,86 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: grabfood_mini_db
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: grabfood_mini
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-ppassword"]
+      timeout: 20s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: grabfood_mini_redis
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: grabfood_mini_backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - ./backend/.env
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - NODE_OPTIONS=--dns-result-order=ipv4first
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=password
+      - DB_NAME=grabfood_mini
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CLIENT_URL=https://grabfood-mini.indonesiacentral.cloudapp.azure.com
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: grabfood_mini_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env
+    environment:
+      - VITE_API_URL=https://grabfood-mini.indonesiacentral.cloudapp.azure.com/api/v1
+      - VITE_BACKEND_PROXY=http://backend:5000
+    depends_on:
+      - backend
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: grabfood_mini_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  db_data:
+  caddy_data:
+  caddy_config:

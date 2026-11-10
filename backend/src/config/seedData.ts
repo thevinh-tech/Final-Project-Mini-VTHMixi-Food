@@ -500,6 +500,130 @@ const SEED_MENU_ITEMS = [
 ];
 
 
+const seedVouchersIfEmpty = async () => {
+  try {
+    const voucherCount = await Voucher.count();
+    if (voucherCount === 0) {
+      console.log('🌱 Seeding sample vouchers...');
+      const admin = await User.findOne({ where: { role: 'admin' } });
+      const vendor = await User.findOne({ where: { role: 'vendor' } });
+      const now = new Date();
+      const nextMonth = new Date();
+      nextMonth.setMonth(now.getMonth() + 1);
+
+      await Voucher.bulkCreate([
+        // Platform wide (System)
+        {
+          code: 'GRABFOOD50K',
+          discountType: 'fixed_amount',
+          discountValue: 50000,
+          minOrderAmount: 150000,
+          startDate: now,
+          endDate: nextMonth,
+          isActive: true,
+          createdBy: admin?.id || null,
+          restaurantId: null,
+        },
+        {
+          code: 'FREESHIP',
+          discountType: 'percentage',
+          discountValue: 100,
+          maxDiscountAmount: 15000,
+          minOrderAmount: 40000,
+          startDate: now,
+          endDate: nextMonth,
+          isActive: true,
+          createdBy: admin?.id || null,
+          restaurantId: null,
+        },
+        {
+          code: 'HELLOSUMMER',
+          discountType: 'percentage',
+          discountValue: 20,
+          maxDiscountAmount: 30000,
+          minOrderAmount: 50000,
+          startDate: now,
+          endDate: nextMonth,
+          isActive: true,
+          createdBy: admin?.id || null,
+          restaurantId: null,
+        },
+        {
+          code: 'SIEUDEAL100K',
+          discountType: 'fixed_amount',
+          discountValue: 100000,
+          minOrderAmount: 250000,
+          startDate: now,
+          endDate: nextMonth,
+          isActive: true,
+          createdBy: admin?.id || null,
+          restaurantId: null,
+        },
+        {
+          code: 'SAIGON90S',
+          discountType: 'fixed_amount',
+          discountValue: 15000,
+          minOrderAmount: 40000,
+          startDate: now,
+          endDate: nextMonth,
+          isActive: true,
+          createdBy: admin?.id || null,
+          restaurantId: null,
+        },
+        {
+          code: 'ANRATNGON',
+          discountType: 'fixed_amount',
+          discountValue: 20000,
+          minOrderAmount: 80000,
+          startDate: now,
+          endDate: nextMonth,
+          isActive: true,
+          createdBy: admin?.id || null,
+          restaurantId: null,
+        },
+        // Restaurant specific
+        {
+          code: 'HUTIEU10',
+          discountType: 'percentage',
+          discountValue: 10,
+          maxDiscountAmount: 10000,
+          minOrderAmount: 30000,
+          startDate: now,
+          endDate: nextMonth,
+          isActive: true,
+          createdBy: vendor?.id || null,
+          restaurantId: 'rest-1',
+        },
+        {
+          code: 'COMTAM15',
+          discountType: 'fixed_amount',
+          discountValue: 15000,
+          minOrderAmount: 50000,
+          startDate: now,
+          endDate: nextMonth,
+          isActive: true,
+          createdBy: vendor?.id || null,
+          restaurantId: 'rest-2',
+        },
+        {
+          code: 'BANHMI5K',
+          discountType: 'fixed_amount',
+          discountValue: 5000,
+          minOrderAmount: 20000,
+          startDate: now,
+          endDate: nextMonth,
+          isActive: true,
+          createdBy: vendor?.id || null,
+          restaurantId: 'rest-5',
+        }
+      ]);
+      console.log('✅ Seeded sample vouchers successfully!');
+    }
+  } catch (error) {
+    console.error('❌ Error seeding vouchers helper:', error);
+  }
+};
+
 export const seedDatabase = async () => {
   try {
     const restaurantCount = await Restaurant.count();
@@ -604,6 +728,7 @@ export const seedDatabase = async () => {
         );
       }
       console.log('✅ Updated menu item and restaurant images.');
+      await seedVouchersIfEmpty();
       return;
     }
 
@@ -665,89 +790,7 @@ export const seedDatabase = async () => {
     console.log(`Seeded ${SEED_MENU_ITEMS.length} menu items!`);
 
     // 4. Seed Vouchers
-    const voucherCount = await Voucher.count();
-    if (voucherCount === 0) {
-      console.log('🌱 Seeding sample vouchers...');
-      const admin = await User.findOne({ where: { role: 'admin' } });
-      const vendor = await User.findOne({ where: { role: 'vendor' } });
-      const now = new Date();
-      const nextMonth = new Date();
-      nextMonth.setMonth(now.getMonth() + 1);
-
-      await Voucher.bulkCreate([
-        // Platform wide
-        {
-          code: 'SAIGON90S',
-          discountType: 'fixed_amount',
-          discountValue: 15000,
-          minOrderAmount: 40000,
-          startDate: now,
-          endDate: nextMonth,
-          isActive: true,
-          createdBy: admin?.id || null,
-          restaurantId: null,
-        },
-        {
-          code: 'FREESHIP',
-          discountType: 'percentage',
-          discountValue: 100,
-          maxDiscountAmount: 15000,
-          minOrderAmount: 50000,
-          startDate: now,
-          endDate: nextMonth,
-          isActive: true,
-          createdBy: admin?.id || null,
-          restaurantId: null,
-        },
-        {
-          code: 'ANRATNGON',
-          discountType: 'fixed_amount',
-          discountValue: 20000,
-          minOrderAmount: 80000,
-          startDate: now,
-          endDate: nextMonth,
-          isActive: true,
-          createdBy: admin?.id || null,
-          restaurantId: null,
-        },
-        // Restaurant specific
-        {
-          code: 'HUTIEU10',
-          discountType: 'percentage',
-          discountValue: 10,
-          maxDiscountAmount: 10000,
-          minOrderAmount: 30000,
-          startDate: now,
-          endDate: nextMonth,
-          isActive: true,
-          createdBy: vendor?.id || null,
-          restaurantId: 'rest-1',
-        },
-        {
-          code: 'COMTAM15',
-          discountType: 'fixed_amount',
-          discountValue: 15000,
-          minOrderAmount: 50000,
-          startDate: now,
-          endDate: nextMonth,
-          isActive: true,
-          createdBy: vendor?.id || null,
-          restaurantId: 'rest-2',
-        },
-        {
-          code: 'BANHMI5K',
-          discountType: 'fixed_amount',
-          discountValue: 5000,
-          minOrderAmount: 20000,
-          startDate: now,
-          endDate: nextMonth,
-          isActive: true,
-          createdBy: vendor?.id || null,
-          restaurantId: 'rest-5',
-        }
-      ]);
-      console.log('Seeded sample vouchers!');
-    }
+    await seedVouchersIfEmpty();
 
   } catch (error) {
     console.error('❌ Error seeding database:', error);
